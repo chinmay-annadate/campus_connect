@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:panorama/panorama.dart';
@@ -20,15 +21,12 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   Map map = {};
   String current = '';
-  // String bg = 'assets/images/loading.png';
-  // String drawerHeader = 'assets/images/loading.png';
   Map floors = {};
   List<String> dropDownList = [];
   String dropDownValue = '';
   List<Hotspot> hotspots = [];
   final storage = FirebaseStorage.instance.ref();
-  var bg =
-      '';
+  var bg = '';
   var drawerHeader = '';
 
   void updateCurrent(String value) {
@@ -109,7 +107,8 @@ class _HomeState extends State<Home> {
         getBG(map[current]['image']);
         getDrawerHeader(map['drawer-header']);
         floors = map['floors'];
-        dropDownList = (floors.keys.toList()).map((item) => item as String).toList();
+        dropDownList =
+            (floors.keys.toList()).map((item) => item as String).toList();
         dropDownValue = dropDownList[0];
         updateHotspots(map[current]['hotspots']);
       });
@@ -200,7 +199,11 @@ class _HomeState extends State<Home> {
       body: Panorama(
         key: UniqueKey(),
         hotspots: hotspots,
-        child: Image.network(bg.toString()),
+        child: Image(
+          image: CachedNetworkImageProvider(
+            bg,
+          ),
+        ),
       ),
     );
   }
