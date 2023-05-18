@@ -106,8 +106,8 @@ class _HomeState extends State<Home> {
       setState(() {
         map = data as Map;
         current = map['start'];
-        // getBG(map[current]['image']);
-        // getDrawerHeader(map['drawer-header']);
+        getBG(map[current]['image']);
+        getDrawerHeader(map['drawer-header']);
         floors = map['floors'];
         dropDownList = (floors.keys.toList()).map((item) => item as String).toList();
         dropDownValue = dropDownList[0];
