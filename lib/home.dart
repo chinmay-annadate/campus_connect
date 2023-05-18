@@ -31,7 +31,6 @@ class _HomeState extends State<Home> {
 
   void updateCurrent(String value) {
     current = value;
-    // bg = map[current]['image'];
     getBG(map[current]['image']);
     updateHotspots(map[current]['hotspots']);
   }
@@ -128,11 +127,7 @@ class _HomeState extends State<Home> {
               decoration: BoxDecoration(
                   image: DecorationImage(
                 fit: BoxFit.fill,
-                image: drawerHeader != 'noImage'
-                    ? NetworkImage(drawerHeader)
-                    : AssetImage('assets/images/noImageAvailable.png')
-                        as ImageProvider,
-              )),
+                image: CachedNetworkImageProvider(drawerHeader),)),
               child: Column(
                 children: const [],
               )),
