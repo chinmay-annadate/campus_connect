@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_const_constructors
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +8,8 @@ import 'package:campus_connect/about.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class Home extends StatefulWidget {
-  const Home({super.key, required this.title, required this.institute});
+  const Home({Key? key, required this.title, required this.institute})
+      : super(key: key);
   final String title;
   final String institute;
 
@@ -18,7 +17,7 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
-class _HomeState extends State<Home> {
+class _HomeState extends State<Home> with TickerProviderStateMixin {
   Map map = {};
   String current = '';
   Map floors = {};
@@ -28,33 +27,46 @@ class _HomeState extends State<Home> {
   final storage = FirebaseStorage.instance.ref();
   var bg = '';
   var drawerHeader = '';
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnimation;
+  late AnimationController _zoomController;
+  late Animation<double> _zoomAnimation;
 
-  void updateCurrent(String value) {
-    current = value;
-    getBG(map[current]['image']);
-    updateHotspots(map[current]['hotspots']);
-  }
-
-  void updateHotspots(angles) {
-    hotspots = [];
-
-    angles.forEach((key, value) {
+  void updateCurrent(String next) async {
+  current = next;
+  final response =
+      await storage.child(map[current]['image']).getDownloadURL();
+  final newBg = response;
+  
+  _zoomController.reset();
+  _zoomController.forward().then((value) {
+    _fadeController.reverse().then((value) {
       setState(() {
-        hotspots.addAll([
-          hotspotMapIcon(double.parse(key)),
-          hotspotLabel(double.parse(key) + 8, value),
-          hotspotArrowIcon(double.parse(key), value),
-        ]);
+        bg = newBg;
+        final angles = map[current]['hotspots'];
+        hotspots = [];
+        angles.forEach((key, value) {
+          hotspots.addAll([
+            hotspotMapIcon(double.parse(key)),
+            hotspotLabel(double.parse(key) + 8, value),
+            hotspotArrowIcon(double.parse(key), value),
+          ]);
+        });
+        _fadeController.forward();
       });
     });
-  }
+    _zoomController.reset();
+    _zoomController.forward();
+  });
+}
+
 
   Hotspot hotspotMapIcon(double long) {
     return Hotspot(
         longitude: long,
         height: 40,
         width: 35,
-        widget: Image(image: AssetImage('assets/images/map-icon.png')));
+        widget: Image.asset('assets/images/map-icon.png'));
   }
 
   Hotspot hotspotArrowIcon(double long, String value) {
@@ -64,9 +76,10 @@ class _HomeState extends State<Home> {
         longitude: long,
         latitude: -10,
         widget: InkWell(
-            key: UniqueKey(),
-            onTap: () => updateCurrent(value),
-            child: Image(image: AssetImage('assets/images/arrow-icon.png'))));
+          key: UniqueKey(),
+          onTap: () => updateCurrent(value),
+          child: Image.asset('assets/images/arrow-icon.png'),
+        ));
   }
 
   Hotspot hotspotLabel(double long, String prompt) {
@@ -76,15 +89,8 @@ class _HomeState extends State<Home> {
         width: 100,
         widget: Text(
           prompt,
-          style: TextStyle(backgroundColor: Colors.blue),
+          style: const TextStyle(backgroundColor: Colors.blue),
         ));
-  }
-
-  void getBG(String name) async {
-    final response = await storage.child(name).getDownloadURL();
-    setState(() {
-      bg = response;
-    });
   }
 
   void getDrawerHeader(String name) async {
@@ -94,24 +100,57 @@ class _HomeState extends State<Home> {
     });
   }
 
-  @override
+    @override
   void initState() {
     super.initState();
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+
+    _zoomController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _zoomAnimation = Tween<double>(begin: 1.0, end: 1.5).animate(
+      CurvedAnimation(
+        parent: _zoomController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _zoomAnimation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _zoomController.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        _zoomController.stop();
+      }
+    });
+
     DatabaseReference ref = FirebaseDatabase.instance.ref(widget.institute);
     ref.onValue.listen((DatabaseEvent event) {
       final data = event.snapshot.value;
       setState(() {
         map = data as Map;
-        current = map['start'];
-        getBG(map[current]['image']);
+        updateCurrent(map['start']);
         getDrawerHeader(map['drawer-header']);
         floors = map['floors'];
-        dropDownList =
-            (floors.keys.toList()).map((item) => item as String).toList();
+        dropDownList = floors.keys.toList().cast<String>();
         dropDownValue = dropDownList[0];
-        updateHotspots(map[current]['hotspots']);
       });
     });
+
+    _zoomController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    _zoomController.dispose();
+    super.dispose();
   }
 
   @override
@@ -121,82 +160,88 @@ class _HomeState extends State<Home> {
         title: Text(widget.title),
       ),
       drawer: Drawer(
-          child: ListView(
-        children: [
-          DrawerHeader(
+        child: ListView(
+          children: [
+            DrawerHeader(
               decoration: BoxDecoration(
-                  image: DecorationImage(
-                fit: BoxFit.fill,
-                image: CachedNetworkImageProvider(drawerHeader),)),
-              child: Column(
-                children: const [],
-              )),
-          // About college
-          TextButton(
-              style: ButtonStyle(),
-              onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => About(title: widget.title))),
-              child: Text(
-                'About college',
-                style: TextStyle(fontSize: 20),
-              )),
-
-          // Floors drop down menu
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: DropdownButton<String>(
-              value: dropDownValue,
-              items: dropDownList.map<DropdownMenuItem<String>>((String value) {
-                return DropdownMenuItem<String>(
-                  value: value,
-                  child: Text(
-                    value,
-                    style: TextStyle(fontSize: 20),
-                  ),
-                );
-              }).toList(),
-              onChanged: (String? newValue) {
-                setState(() {
-                  dropDownValue = newValue!;
-                });
-              },
-            ),
-          ),
-
-          // Map widget
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Container(
-              height: 200,
-              width: 100,
-              decoration: BoxDecoration(border: Border.all()),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [Text("Map")],
+                image: DecorationImage(
+                  fit: BoxFit.fill,
+                  image: CachedNetworkImageProvider(drawerHeader),
+                ),
+              ),
+              child: const Column(
+                children: [],
               ),
             ),
-          ),
-
-          // About app
-          TextButton(
-              onPressed: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => AboutApp(title: widget.title))),
-              child: Text(
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text(
+                'About college',
+                style: TextStyle(fontSize: 18),
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => About(title: widget.title)),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: DropdownButton<String>(
+                value: dropDownValue,
+                items: dropDownList.map<DropdownMenuItem<String>>(
+                  (String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(
+                        value,
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    );
+                  },
+                ).toList(),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    dropDownValue = newValue!;
+                  });
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Container(
+                height: 200,
+                width: 100,
+                decoration: BoxDecoration(border: Border.all()),
+                child: const Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [Text("Map")],
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.question_mark_outlined),
+              title: const Text(
                 'About app',
-                style: TextStyle(fontSize: 20),
-              ))
-        ],
-      )),
-      body: Panorama(
-        key: UniqueKey(),
-        hotspots: hotspots,
-        child: Image(
-          image: CachedNetworkImageProvider(
-            bg,
+                style: TextStyle(fontSize: 18),
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => AboutApp(title: widget.title),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      body: FadeTransition(
+        opacity: _fadeAnimation,
+        child: ScaleTransition(
+          scale: _zoomAnimation,
+          child: Panorama(
+            key: UniqueKey(),
+            hotspots: hotspots,
+            child: Image(image: CachedNetworkImageProvider(bg))
           ),
         ),
       ),
