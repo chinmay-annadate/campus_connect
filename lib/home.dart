@@ -29,13 +29,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   var drawerHeader = '';
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
+  late AnimationController _zoomController;
+  late Animation<double> _zoomAnimation;
 
   void updateCurrent(String next) async {
-    current = next;
-    final response =
-        await storage.child(map[current]['image']).getDownloadURL();
-    final newBg = response;
-
+  current = next;
+  final response =
+      await storage.child(map[current]['image']).getDownloadURL();
+  final newBg = response;
+  
+  _zoomController.reset();
+  _zoomController.forward().then((value) {
     _fadeController.reverse().then((value) {
       setState(() {
         bg = newBg;
@@ -51,7 +55,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         _fadeController.forward();
       });
     });
-  }
+    _zoomController.reset();
+    _zoomController.forward();
+  });
+}
+
 
   Hotspot hotspotMapIcon(double long) {
     return Hotspot(
@@ -92,7 +100,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     });
   }
 
-  @override
+    @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
@@ -103,6 +111,24 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       parent: _fadeController,
       curve: Curves.easeInOut,
     );
+
+    _zoomController = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    );
+    _zoomAnimation = Tween<double>(begin: 1.0, end: 1.5).animate(
+      CurvedAnimation(
+        parent: _zoomController,
+        curve: Curves.easeInOut,
+      ),
+    );
+    _zoomAnimation.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _zoomController.reverse();
+      } else if (status == AnimationStatus.dismissed) {
+        _zoomController.stop();
+      }
+    });
 
     DatabaseReference ref = FirebaseDatabase.instance.ref(widget.institute);
     ref.onValue.listen((DatabaseEvent event) {
@@ -116,11 +142,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         dropDownValue = dropDownList[0];
       });
     });
+
+    _zoomController.forward();
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
+    _zoomController.dispose();
     super.dispose();
   }
 
@@ -207,10 +236,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       ),
       body: FadeTransition(
         opacity: _fadeAnimation,
-        child: Panorama(
-          key: UniqueKey(),
-          hotspots: hotspots,
-          child: Image(image: CachedNetworkImageProvider(bg),)
+        child: ScaleTransition(
+          scale: _zoomAnimation,
+          child: Panorama(
+            key: UniqueKey(),
+            hotspots: hotspots,
+            child: Image(image: CachedNetworkImageProvider(bg))
+          ),
         ),
       ),
     );
