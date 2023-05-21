@@ -60,7 +60,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   });
 }
 
-
   Hotspot hotspotMapIcon(double long) {
     return Hotspot(
         longitude: long,
@@ -157,7 +156,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(current),
       ),
       drawer: Drawer(
         child: ListView(
@@ -173,6 +172,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 children: [],
               ),
             ),
+
+            // About college
             ListTile(
               leading: const Icon(Icons.info_outline),
               title: const Text(
@@ -181,9 +182,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               ),
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => About(title: widget.title)),
+                MaterialPageRoute(builder: (_) => About(title: map['acronym'])),
               ),
             ),
+
+            // Floors dropdown
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: DropdownButton<String>(
@@ -206,6 +209,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 },
               ),
             ),
+
+            // map widget
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Container(
@@ -218,6 +223,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 ),
               ),
             ),
+
+            // about app
             ListTile(
               leading: const Icon(Icons.question_mark_outlined),
               title: const Text(
@@ -227,7 +234,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               onTap: () => Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (_) => AboutApp(title: widget.title),
+                  builder: (_) => const AboutApp(),
                 ),
               ),
             ),
