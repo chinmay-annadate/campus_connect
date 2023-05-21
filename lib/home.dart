@@ -6,6 +6,7 @@ import 'package:panorama/panorama.dart';
 import 'package:campus_connect/about_app.dart';
 import 'package:campus_connect/about.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key, required this.title, required this.institute})
@@ -20,6 +21,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with TickerProviderStateMixin {
   Map map = {};
   String current = '';
+  String description = '';
   Map floors = {};
   List<String> dropDownList = [];
   String dropDownValue = '';
@@ -33,32 +35,33 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   late Animation<double> _zoomAnimation;
 
   void updateCurrent(String next) async {
-  current = next;
-  final response =
-      await storage.child(map[current]['image']).getDownloadURL();
-  final newBg = response;
-  
-  _zoomController.reset();
-  _zoomController.forward().then((value) {
-    _fadeController.reverse().then((value) {
-      setState(() {
-        bg = newBg;
-        final angles = map[current]['hotspots'];
-        hotspots = [];
-        angles.forEach((key, value) {
-          hotspots.addAll([
-            hotspotMapIcon(double.parse(key)),
-            hotspotLabel(double.parse(key) + 8, value),
-            hotspotArrowIcon(double.parse(key), value),
-          ]);
-        });
-        _fadeController.forward();
-      });
-    });
+    current = next;
+    final response =
+        await storage.child(map[current]['image']).getDownloadURL();
+    final newBg = response;
+
     _zoomController.reset();
-    _zoomController.forward();
-  });
-}
+    _zoomController.forward().then((value) {
+      _fadeController.reverse().then((value) {
+        setState(() {
+          bg = newBg;
+          description = map[current]['description'];
+          final angles = map[current]['hotspots'];
+          hotspots = [];
+          angles.forEach((key, value) {
+            hotspots.addAll([
+              hotspotMapIcon(double.parse(key)),
+              hotspotLabel(double.parse(key) + 8, value),
+              hotspotArrowIcon(double.parse(key), value),
+            ]);
+          });
+          _fadeController.forward();
+        });
+      });
+      _zoomController.reset();
+      _zoomController.forward();
+    });
+  }
 
   Hotspot hotspotMapIcon(double long) {
     return Hotspot(
@@ -99,7 +102,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     });
   }
 
-    @override
+  @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
@@ -155,101 +158,164 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(current),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.fill,
-                  image: CachedNetworkImageProvider(drawerHeader),
+        appBar: AppBar(
+          title: Text(current),
+        ),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: CachedNetworkImageProvider(drawerHeader),
+                  ),
                 ),
-              ),
-              child: const Column(
-                children: [],
-              ),
-            ),
-
-            // About college
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text(
-                'About college',
-                style: TextStyle(fontSize: 18),
-              ),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => About(title: map['acronym'])),
-              ),
-            ),
-
-            // Floors dropdown
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButton<String>(
-                value: dropDownValue,
-                items: dropDownList.map<DropdownMenuItem<String>>(
-                  (String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    );
-                  },
-                ).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    dropDownValue = newValue!;
-                  });
-                },
-              ),
-            ),
-
-            // map widget
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Container(
-                height: 200,
-                width: 100,
-                decoration: BoxDecoration(border: Border.all()),
                 child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text("Map")],
+                  children: [],
                 ),
               ),
-            ),
 
-            // about app
-            ListTile(
-              leading: const Icon(Icons.question_mark_outlined),
-              title: const Text(
-                'About app',
-                style: TextStyle(fontSize: 18),
-              ),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AboutApp(),
+              // About college
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text(
+                  'About college',
+                  style: TextStyle(fontSize: 18),
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => About(title: map['acronym'])),
                 ),
               ),
-            ),
-          ],
+
+              // Floors dropdown
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: DropdownButton<String>(
+                  value: dropDownValue,
+                  items: dropDownList.map<DropdownMenuItem<String>>(
+                    (String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(
+                          value,
+                          style: const TextStyle(fontSize: 18),
+                        ),
+                      );
+                    },
+                  ).toList(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      dropDownValue = newValue!;
+                    });
+                  },
+                ),
+              ),
+
+              // map widget
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Container(
+                  height: 200,
+                  width: 100,
+                  decoration: BoxDecoration(border: Border.all()),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [Text("Map")],
+                  ),
+                ),
+              ),
+
+              // about app
+              ListTile(
+                leading: const Icon(Icons.question_mark_outlined),
+                title: const Text(
+                  'About app',
+                  style: TextStyle(fontSize: 18),
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AboutApp(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ScaleTransition(
+            scale: _zoomAnimation,
+            child: Panorama(
+                key: UniqueKey(),
+                hotspots: hotspots,
+                child: Image(image: CachedNetworkImageProvider(bg))),
+          ),
+        ),
+        floatingActionButton: FAB(
+          text: description,
+        ));
+  }
+}
+
+class FAB extends StatefulWidget {
+  const FAB({super.key, required this.text});
+  final String text;
+
+  @override
+  State<FAB> createState() => _FABState();
+}
+
+class _FABState extends State<FAB> {
+  FlutterTts flutterTts = FlutterTts();
+  bool isSpeaking = false;
+
+  Future<void> _toggleSpeaking() async {
+    if (isSpeaking) {
+      await flutterTts.stop();
+    } else {
+      await flutterTts.speak(widget.text);
+    }
+
+    setState(() {
+      isSpeaking = !isSpeaking;
+    });
+  }
+
+  void _onComplete() {
+    setState(() {
+      isSpeaking = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts.setCompletionHandler(_onComplete);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Draggable(
+      feedback: FloatingActionButton(
+        onPressed: _toggleSpeaking,
+        tooltip: isSpeaking ? 'Stop Speaking' : 'Speak',
+        backgroundColor: isSpeaking ? Colors.red : Colors.blue,
+        child: Icon(
+          isSpeaking ? Icons.volume_off : Icons.volume_up,
+          size: 28,
         ),
       ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: ScaleTransition(
-          scale: _zoomAnimation,
-          child: Panorama(
-            key: UniqueKey(),
-            hotspots: hotspots,
-            child: Image(image: CachedNetworkImageProvider(bg))
-          ),
+      childWhenDragging: Container(), // Empty container when dragging
+      child: FloatingActionButton(
+        onPressed: _toggleSpeaking,
+        tooltip: isSpeaking ? 'Stop Speaking' : 'Speak',
+        backgroundColor: isSpeaking ? Colors.red : Colors.blue,
+        child: Icon(
+          isSpeaking ? Icons.volume_off : Icons.volume_up,
         ),
       ),
     );
