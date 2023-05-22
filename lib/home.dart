@@ -182,7 +182,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               ),
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => About(title: map['acronym'])),
+                MaterialPageRoute(builder: (_) => About(title: map['acronym'], about: map['about'],)),
               ),
             ),
 
