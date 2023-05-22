@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:campus_connect/feedback.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:panorama/panorama.dart';
@@ -235,6 +236,19 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 context,
                 MaterialPageRoute(
                   builder: (_) => const AboutApp(),
+                ),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.feedback_outlined),
+              title: const Text(
+                'Feedback',
+                style: TextStyle(fontSize: 18),
+              ),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const FeedbackForm(),
                 ),
               ),
             ),
