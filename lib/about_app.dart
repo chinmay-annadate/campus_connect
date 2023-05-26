@@ -14,16 +14,23 @@ class AboutApp extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            // heading
             Text(
               'About Campus Connect App',
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
+
             SizedBox(height: 16),
+
+            // desc
             Text(
               'Campus Connect is an innovative app that allows parents and students to explore educational institutions across the country without the need for physical travel. With our Campus Connect feature, you can experience the campuses, facilities, and courses offered at various colleges right from your device.',
               style: TextStyle(fontSize: 16),
             ),
+
             SizedBox(height: 20),
+
+            // features
             Text(
               'Key Features:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -33,7 +40,10 @@ class AboutApp extends StatelessWidget {
               '- Virtual tours of colleges and educational institutions\n- Detailed information about courses offered\n- Insights into the facilities provided\n- Save time and travel costs\n- Easy navigation and user-friendly interface',
               style: TextStyle(fontSize: 16),
             ),
+
             SizedBox(height: 20),
+
+            // project
             Text(
               'Project:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -43,7 +53,10 @@ class AboutApp extends StatelessWidget {
               'This app was developed as part of a mini project for the TY CSE A class at Walchand Institute of Technology, Solapur.',
               style: TextStyle(fontSize: 16),
             ),
+
             SizedBox(height: 20),
+
+            // team members
             Text(
               'Team Members:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

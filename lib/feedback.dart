@@ -53,6 +53,7 @@ class _FeedbackFormState extends State<FeedbackForm> {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // name
         TextFormField(
           decoration: const InputDecoration(
             labelText: 'Name',
@@ -68,7 +69,10 @@ class _FeedbackFormState extends State<FeedbackForm> {
             _name = value!;
           },
         ),
+
         const SizedBox(height: 16.0),
+
+        // email
         TextFormField(
           decoration: const InputDecoration(
             labelText: 'Email',
@@ -84,7 +88,10 @@ class _FeedbackFormState extends State<FeedbackForm> {
             _email = value!;
           },
         ),
+        
         const SizedBox(height: 16.0),
+
+        // feedback
         TextFormField(
           decoration: const InputDecoration(
             labelText: 'Feedback',
@@ -101,7 +108,10 @@ class _FeedbackFormState extends State<FeedbackForm> {
           },
           maxLines: 5,
         ),
+
         const SizedBox(height: 16.0),
+
+        // submit
         ElevatedButton(
           child: const Text('Submit',style: TextStyle(fontSize: 16),),
           onPressed: () {

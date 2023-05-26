@@ -1,12 +1,19 @@
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:campus_connect/feedback.dart';
-import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
-import 'package:panorama/panorama.dart';
 
-import 'package:campus_connect/about_app.dart';
-import 'package:campus_connect/about.dart';
+import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+
+import 'package:panorama/panorama.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import 'package:url_launcher/url_launcher.dart';
+import 'package:maps_launcher/maps_launcher.dart';
+import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
+
+import 'package:campus_connect/about.dart';
+import 'package:campus_connect/about_app.dart';
+import 'package:campus_connect/feedback.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key, required this.title, required this.institute})
@@ -22,44 +29,52 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Map map = {};
   String current = '';
   Map floors = {};
+
   List<String> dropDownList = [];
   String dropDownValue = '';
+
   List<Hotspot> hotspots = [];
+
   final storage = FirebaseStorage.instance.ref();
-  var bg = '';
-  var drawerHeader = '';
+
+  String bg = '';
+  String drawerHeader = '';
+
   late AnimationController _fadeController;
   late Animation<double> _fadeAnimation;
   late AnimationController _zoomController;
   late Animation<double> _zoomAnimation;
 
+  MapController mapController = MapController();
+  double lat = 0.0, long = 0.0;
+
   void updateCurrent(String next) async {
-  current = next;
-  final response =
-      await storage.child(map[current]['image']).getDownloadURL();
-  final newBg = response;
-  
-  _zoomController.reset();
-  _zoomController.forward().then((value) {
-    _fadeController.reverse().then((value) {
-      setState(() {
-        bg = newBg;
-        final angles = map[current]['hotspots'];
-        hotspots = [];
-        angles.forEach((key, value) {
-          hotspots.addAll([
-            hotspotMapIcon(double.parse(key)),
-            hotspotLabel(double.parse(key) + 8, value),
-            hotspotArrowIcon(double.parse(key), value),
-          ]);
-        });
-        _fadeController.forward();
-      });
-    });
+    current = next;
+    final response =
+        await storage.child(map[current]['image']).getDownloadURL();
+    final newBg = response;
+
     _zoomController.reset();
-    _zoomController.forward();
-  });
-}
+    _zoomController.forward().then((value) {
+      _fadeController.reverse().then((value) {
+        setState(() {
+          bg = newBg;
+          final angles = map[current]['hotspots'];
+          hotspots = [];
+          angles.forEach((key, value) {
+            hotspots.addAll([
+              hotspotMapIcon(double.parse(key)),
+              hotspotLabel(double.parse(key) + 8, value),
+              hotspotArrowIcon(double.parse(key), value),
+            ]);
+          });
+          _fadeController.forward();
+        });
+      });
+      _zoomController.reset();
+      _zoomController.forward();
+    });
+  }
 
   Hotspot hotspotMapIcon(double long) {
     return Hotspot(
@@ -100,13 +115,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     });
   }
 
-    @override
+  @override
   void initState() {
     super.initState();
     _fadeController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
     );
+
     _fadeAnimation = CurvedAnimation(
       parent: _fadeController,
       curve: Curves.easeInOut,
@@ -116,12 +132,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       duration: const Duration(seconds: 1),
       vsync: this,
     );
+
     _zoomAnimation = Tween<double>(begin: 1.0, end: 1.5).animate(
       CurvedAnimation(
         parent: _zoomController,
         curve: Curves.easeInOut,
       ),
     );
+
     _zoomAnimation.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _zoomController.reverse();
@@ -140,6 +158,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         floors = map['floors'];
         dropDownList = floors.keys.toList().cast<String>();
         dropDownValue = dropDownList[0];
+        lat = double.parse(map['lat']);
+        long = double.parse(map['long']);
       });
     });
 
@@ -183,7 +203,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               ),
               onTap: () => Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => About(title: map['acronym'], about: map['about'],)),
+                MaterialPageRoute(
+                    builder: (_) => About(
+                          title: map['acronym'],
+                          about: map['about'],
+                        )),
               ),
             ),
 
@@ -213,16 +237,51 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
             // map widget
             Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(10.0),
               child: Container(
-                height: 200,
-                width: 100,
                 decoration: BoxDecoration(border: Border.all()),
-                child: const Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [Text("Map")],
-                ),
-              ),
+                  height: 300,
+                  width: 500,
+                  child: FlutterMap(
+                    key: UniqueKey(),
+                    options: MapOptions(
+                      center: LatLng(lat, long),
+                      zoom: 15,
+                    ),
+                    nonRotatedChildren: [
+                      RichAttributionWidget(
+                        attributions: [
+                          TextSourceAttribution(
+                            'OpenStreetMap contributors',
+                            onTap: () => launchUrl(Uri.parse(
+                                'https://openstreetmap.org/copyright')),
+                          ),
+                        ],
+                      ),
+                    ],
+                    children: [
+                      TileLayer(
+                        urlTemplate:
+                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                        userAgentPackageName: 'com.example.app',
+                      ),
+                      MarkerLayer(
+                        markers: [
+                          Marker(
+                            point: LatLng(lat, long),
+                            builder: (ctx) => InkWell(
+                              onTap: () =>
+                                  MapsLauncher.launchQuery(map['query']),
+                              child: Image.asset(
+                                  height: 50,
+                                  width: 50,
+                                  'assets/images/map-icon.png'),
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  )),
             ),
 
             // about app
@@ -239,6 +298,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                 ),
               ),
             ),
+
+            // feedback
             ListTile(
               leading: const Icon(Icons.feedback_outlined),
               title: const Text(
@@ -260,10 +321,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         child: ScaleTransition(
           scale: _zoomAnimation,
           child: Panorama(
-            key: UniqueKey(),
-            hotspots: hotspots,
-            child: Image(image: CachedNetworkImageProvider(bg))
-          ),
+              key: UniqueKey(),
+              hotspots: hotspots,
+              child: Image(image: CachedNetworkImageProvider(bg))),
         ),
       ),
     );
