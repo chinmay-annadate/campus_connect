@@ -111,6 +111,7 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // input
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
@@ -133,6 +134,8 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                     },
                   ),
                 ),
+
+                // start virtual tour
                 ElevatedButton(
                   onPressed: () {
                     if (selectedInstitute.isNotEmpty) {
