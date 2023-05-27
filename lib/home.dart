@@ -243,7 +243,6 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   height: 300,
                   width: 500,
                   child: FlutterMap(
-                    key: UniqueKey(),
                     options: MapOptions(
                       center: LatLng(lat, long),
                       zoom: 15,
