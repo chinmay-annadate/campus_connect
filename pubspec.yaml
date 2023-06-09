@@ -45,6 +45,7 @@ dependencies:
   flutter_map: ^4.0.0
   latlong2: ^0.8.2
   maps_launcher: ^2.2.0
+  flutter_tts: ^3.7.0
 
 dev_dependencies:
   flutter_test:

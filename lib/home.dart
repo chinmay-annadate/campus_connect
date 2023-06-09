@@ -15,6 +15,8 @@ import 'package:campus_connect/about.dart';
 import 'package:campus_connect/about_app.dart';
 import 'package:campus_connect/feedback.dart';
 
+import 'package:flutter_tts/flutter_tts.dart';
+
 class Home extends StatefulWidget {
   const Home({Key? key, required this.title, required this.institute})
       : super(key: key);
@@ -28,6 +30,7 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> with TickerProviderStateMixin {
   Map map = {};
   String current = '';
+  String description = '';
   Map floors = {};
 
   List<String> dropDownList = [];
@@ -59,6 +62,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       _fadeController.reverse().then((value) {
         setState(() {
           bg = newBg;
+          description = map[current]['description'];
           final angles = map[current]['hotspots'];
           hotspots = [];
           angles.forEach((key, value) {
@@ -323,6 +327,70 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
               key: UniqueKey(),
               hotspots: hotspots,
               child: Image(image: CachedNetworkImageProvider(bg))),
+        ),
+      ),
+      floatingActionButton: FAB(
+          text: description,
+        )
+    );
+  }
+}
+
+class FAB extends StatefulWidget {
+  const FAB({super.key, required this.text});
+  final String text;
+
+  @override
+  State<FAB> createState() => _FABState();
+}
+
+class _FABState extends State<FAB> {
+  FlutterTts flutterTts = FlutterTts();
+  bool isSpeaking = false;
+
+  Future<void> _toggleSpeaking() async {
+    if (isSpeaking) {
+      await flutterTts.stop();
+    } else {
+      await flutterTts.speak(widget.text);
+    }
+
+    setState(() {
+      isSpeaking = !isSpeaking;
+    });
+  }
+
+  void _onComplete() {
+    setState(() {
+      isSpeaking = false;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    flutterTts.setCompletionHandler(_onComplete);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Draggable(
+      feedback: FloatingActionButton(
+        onPressed: _toggleSpeaking,
+        tooltip: isSpeaking ? 'Stop Speaking' : 'Speak',
+        backgroundColor: isSpeaking ? Colors.red : Colors.blue,
+        child: Icon(
+          isSpeaking ? Icons.volume_off : Icons.volume_up,
+          size: 28,
+        ),
+      ),
+      childWhenDragging: Container(), // Empty container when dragging
+      child: FloatingActionButton(
+        onPressed: _toggleSpeaking,
+        tooltip: isSpeaking ? 'Stop Speaking' : 'Speak',
+        backgroundColor: isSpeaking ? Colors.red : Colors.blue,
+        child: Icon(
+          isSpeaking ? Icons.volume_off : Icons.volume_up,
         ),
       ),
     );
