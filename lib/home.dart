@@ -14,6 +14,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:campus_connect/about.dart';
 import 'package:campus_connect/about_app.dart';
 import 'package:campus_connect/feedback.dart';
+import 'package:campus_connect/random_navigation.dart';
 
 import 'package:flutter_tts/flutter_tts.dart';
 
@@ -31,10 +32,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   Map map = {};
   String current = '';
   String description = '';
-  Map floors = {};
 
-  List<String> dropDownList = [];
-  String dropDownValue = '';
+  Map buildings={};
 
   List<Hotspot> hotspots = [];
 
@@ -159,9 +158,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         map = data as Map;
         updateCurrent(map['start']);
         getDrawerHeader(map['drawer-header']);
-        floors = map['floors'];
-        dropDownList = floors.keys.toList().cast<String>();
-        dropDownValue = dropDownList[0];
+        buildings = map['buildings'];
         lat = double.parse(map['lat']);
         long = double.parse(map['long']);
       });
@@ -180,159 +177,138 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(current),
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  fit: BoxFit.fill,
-                  image: CachedNetworkImageProvider(drawerHeader),
-                ),
-              ),
-              child: const Column(
-                children: [],
-              ),
-            ),
-
-            // About college
-            ListTile(
-              leading: const Icon(Icons.info_outline),
-              title: const Text(
-                'About college',
-                style: TextStyle(fontSize: 18),
-              ),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => About(
-                          title: map['acronym'],
-                          about: map['about'],
-                        )),
-              ),
-            ),
-
-            // Floors dropdown
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButton<String>(
-                value: dropDownValue,
-                items: dropDownList.map<DropdownMenuItem<String>>(
-                  (String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(
-                        value,
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    );
-                  },
-                ).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    dropDownValue = newValue!;
-                  });
-                },
-              ),
-            ),
-
-            // map widget
-            Padding(
-              padding: const EdgeInsets.all(10.0),
-              child: Container(
-                decoration: BoxDecoration(border: Border.all()),
-                  height: 300,
-                  width: 500,
-                  child: FlutterMap(
-                    options: MapOptions(
-                      center: LatLng(lat, long),
-                      zoom: 15,
-                    ),
-                    nonRotatedChildren: [
-                      RichAttributionWidget(
-                        attributions: [
-                          TextSourceAttribution(
-                            'OpenStreetMap contributors',
-                            onTap: () => launchUrl(Uri.parse(
-                                'https://openstreetmap.org/copyright')),
-                          ),
-                        ],
-                      ),
-                    ],
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                        userAgentPackageName: 'com.example.app',
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: LatLng(lat, long),
-                            builder: (ctx) => InkWell(
-                              onTap: () =>
-                                  MapsLauncher.launchQuery(map['query']),
-                              child: Image.asset(
-                                  height: 50,
-                                  width: 50,
-                                  'assets/images/map-icon.png'),
-                            ),
-                          )
-                        ],
-                      )
-                    ],
-                  )),
-            ),
-
-            // about app
-            ListTile(
-              leading: const Icon(Icons.question_mark_outlined),
-              title: const Text(
-                'About app',
-                style: TextStyle(fontSize: 18),
-              ),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const AboutApp(),
-                ),
-              ),
-            ),
-
-            // feedback
-            ListTile(
-              leading: const Icon(Icons.feedback_outlined),
-              title: const Text(
-                'Feedback',
-                style: TextStyle(fontSize: 18),
-              ),
-              onTap: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const FeedbackForm(),
-                ),
-              ),
-            ),
+        appBar: AppBar(
+          key: UniqueKey(),
+          title: Text(current),
+          actions: [
+            PopupMenu(buildings: buildings, updateCurrent: updateCurrent)
           ],
         ),
-      ),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: ScaleTransition(
-          scale: _zoomAnimation,
-          child: Panorama(
-              key: UniqueKey(),
-              hotspots: hotspots,
-              child: Image(image: CachedNetworkImageProvider(bg))),
+        drawer: Drawer(
+          child: ListView(
+            children: [
+              DrawerHeader(
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    fit: BoxFit.fill,
+                    image: CachedNetworkImageProvider(drawerHeader),
+                  ),
+                ),
+                child: const Column(
+                  children: [],
+                ),
+              ),
+
+              // About college
+              ListTile(
+                leading: const Icon(Icons.info_outline),
+                title: const Text(
+                  'About college',
+                  style: TextStyle(fontSize: 18),
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => About(
+                            title: map['acronym'],
+                            about: map['about'],
+                          )),
+                ),
+              ),
+
+              // map widget
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Container(
+                    decoration: BoxDecoration(border: Border.all()),
+                    height: 300,
+                    width: 500,
+                    child: FlutterMap(
+                      options: MapOptions(
+                        center: LatLng(lat, long),
+                        zoom: 15,
+                      ),
+                      nonRotatedChildren: [
+                        RichAttributionWidget(
+                          attributions: [
+                            TextSourceAttribution(
+                              'OpenStreetMap contributors',
+                              onTap: () => launchUrl(Uri.parse(
+                                  'https://openstreetmap.org/copyright')),
+                            ),
+                          ],
+                        ),
+                      ],
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                          userAgentPackageName: 'com.example.app',
+                        ),
+                        MarkerLayer(
+                          markers: [
+                            Marker(
+                              point: LatLng(lat, long),
+                              builder: (ctx) => InkWell(
+                                onTap: () =>
+                                    MapsLauncher.launchQuery(map['query']),
+                                child: Image.asset(
+                                    height: 50,
+                                    width: 50,
+                                    'assets/images/map-icon.png'),
+                              ),
+                            )
+                          ],
+                        )
+                      ],
+                    )),
+              ),
+
+              // about app
+              ListTile(
+                leading: const Icon(Icons.question_mark_outlined),
+                title: const Text(
+                  'About app',
+                  style: TextStyle(fontSize: 18),
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const AboutApp(),
+                  ),
+                ),
+              ),
+
+              // feedback
+              ListTile(
+                leading: const Icon(Icons.feedback_outlined),
+                title: const Text(
+                  'Feedback',
+                  style: TextStyle(fontSize: 18),
+                ),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const FeedbackForm(),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-      ),
-      floatingActionButton: FAB(
+        body: FadeTransition(
+          opacity: _fadeAnimation,
+          child: ScaleTransition(
+            scale: _zoomAnimation,
+            child: Panorama(
+                key: UniqueKey(),
+                hotspots: hotspots,
+                child: Image(image: CachedNetworkImageProvider(bg))),
+          ),
+        ),
+        floatingActionButton: FAB(
           text: description,
-        )
-    );
+        ));
   }
 }
 
