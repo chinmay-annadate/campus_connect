@@ -33,7 +33,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   String current = '';
   String description = '';
 
-  Map buildings={};
+  Map buildings = {};
 
   List<Hotspot> hotspots = [];
 
@@ -181,7 +181,17 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           key: UniqueKey(),
           title: Text(current),
           actions: [
-            PopupMenu(buildings: buildings, updateCurrent: updateCurrent)
+            IconButton(
+              icon: const Icon(Icons.navigation_outlined),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (context) {
+                      return PopupMenu(
+                          buildings: buildings, updateCurrent: updateCurrent);
+                    });
+              },
+            ),
           ],
         ),
         drawer: Drawer(
@@ -262,6 +272,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                         )
                       ],
                     )),
+              ),
+
+              const Divider(
+                // thickness: 3,
+                color: Colors.black26,
+                indent: 5,
+                endIndent: 5,
               ),
 
               // about app
