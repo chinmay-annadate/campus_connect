@@ -41,8 +41,6 @@ class _PopupMenuState extends State<PopupMenu> {
 
     roomsDropDownList = (floors[floorsDropDownValue] as List).cast<String>();
     roomsDropDownValue = widget.room;
-    print(roomsDropDownList);
-    print(roomsDropDownValue);
   }
 
   @override
