@@ -30,7 +30,11 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
   Map map = {};
+
   String current = '';
+  String building = '';
+  String floor = '';
+
   String description = '';
 
   Map buildings = {};
@@ -54,13 +58,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     current = next;
     final response =
         await storage.child(map[current]['image']).getDownloadURL();
-    final newBg = response;
-
     _zoomController.reset();
     _zoomController.forward().then((value) {
       _fadeController.reverse().then((value) {
         setState(() {
-          bg = newBg;
+          bg = response;
+          building = map[current]['building'];
+          floor = map[current]['floor'];
           description = map[current]['description'];
           final angles = map[current]['hotspots'];
           hotspots = [];
@@ -188,7 +192,11 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     context: context,
                     builder: (context) {
                       return PopupMenu(
-                          buildings: buildings, updateCurrent: updateCurrent);
+                          buildings: buildings,
+                          updateCurrent: updateCurrent,
+                          building: building,
+                          floor: floor,
+                          room: current);
                     });
               },
             ),

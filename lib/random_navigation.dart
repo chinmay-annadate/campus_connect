@@ -2,9 +2,17 @@ import 'package:flutter/material.dart';
 
 class PopupMenu extends StatefulWidget {
   const PopupMenu(
-      {super.key, required this.buildings, required this.updateCurrent});
+      {super.key,
+      required this.buildings,
+      required this.updateCurrent,
+      required this.building,
+      required this.floor,
+      required this.room});
   final Map buildings;
   final Function(String) updateCurrent;
+  final String building;
+  final String floor;
+  final String room;
 
   @override
   State<PopupMenu> createState() => _PopupMenuState();
@@ -25,14 +33,16 @@ class _PopupMenuState extends State<PopupMenu> {
   void initState() {
     super.initState();
     buildingsDropDownList = widget.buildings.keys.toList().cast<String>();
-    buildingsDropDownValue = buildingsDropDownList[0];
+    buildingsDropDownValue = widget.building;
 
     floors = widget.buildings[buildingsDropDownValue];
     floorsDropDownList = floors.keys.toList().cast<String>();
-    floorsDropDownValue = floorsDropDownList[0];
+    floorsDropDownValue = widget.floor;
 
     roomsDropDownList = (floors[floorsDropDownValue] as List).cast<String>();
-    roomsDropDownValue = roomsDropDownList[0];
+    roomsDropDownValue = widget.room;
+    print(roomsDropDownList);
+    print(roomsDropDownValue);
   }
 
   @override
@@ -62,18 +72,18 @@ class _PopupMenuState extends State<PopupMenu> {
               onChanged: (String? newValue) {
                 setState(() {
                   buildingsDropDownValue = newValue!;
-            
+
                   floors = widget.buildings[buildingsDropDownValue];
                   floorsDropDownList = floors.keys.toList().cast<String>();
                   floorsDropDownValue = floorsDropDownList[0];
-            
+
                   roomsDropDownList =
                       (floors[floorsDropDownValue] as List).cast<String>();
                   roomsDropDownValue = roomsDropDownList[0];
                 });
               },
             ),
-            
+
             // floors dropdown
             DropdownButton<String>(
               value: floorsDropDownValue,
@@ -97,7 +107,7 @@ class _PopupMenuState extends State<PopupMenu> {
                 });
               },
             ),
-            
+
             // rooms dropdown
             DropdownButton<String>(
               value: roomsDropDownValue,
