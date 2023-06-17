@@ -137,10 +137,12 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             final angles = map[currentRoom]['hotspots'];
             hotspots = [];
             angles.forEach((key, value) {
+              // converting the string key to double
+              final long = double.parse(key);
               hotspots.addAll([
-                hotspotMapIcon(double.parse(key)),
-                hotspotLabel(double.parse(key) + 8, value),
-                hotspotArrowIcon(double.parse(key), value),
+                hotspotMapIcon(long),
+                hotspotLabel(long + 8, value),
+                hotspotArrowIcon(long, value),
               ]);
             });
             // fade in animation
@@ -154,7 +156,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     }
   }
 
-  // returns a map icon hotspot
+  // (x, y) => (longitude, latitude)
+  // returns a map icon hotspot at (long,0)
   Hotspot hotspotMapIcon(double long) {
     return Hotspot(
         longitude: long,
@@ -163,7 +166,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         widget: Image.asset('assets/images/map-icon.png'));
   }
 
-  // returns an arrow icon hotspot that calls updateCurrent() onTap
+  // returns an arrow icon hotspot that calls updateCurrent(value) onTap at (long+8,-10)
   Hotspot hotspotArrowIcon(double long, String value) {
     return Hotspot(
         height: 120,
@@ -177,7 +180,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         ));
   }
 
-  // returns a label hotspot
+  // returns a label hotspot with prompt text at (long, -1)
   Hotspot hotspotLabel(double long, String prompt) {
     return Hotspot(
         latitude: -1,
@@ -263,7 +266,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
         // if tour stack is empty, back button will redirect to main.dart
         if (tourStack.isEmpty) {
-          return true;
+            return true;
         }
 
         // else updateCurrent() is called with reverse set true
@@ -312,7 +315,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                   ),
                 ),
 
-                // About college: naviagtes to about college page
+                // About college: navagates to about college page
                 ListTile(
                   leading: const Icon(Icons.info_outline),
                   title: const Text(
