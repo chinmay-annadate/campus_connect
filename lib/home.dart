@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 
+// firebase rtdb and cloud storage
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
+// panorama
 import 'package:panorama/panorama.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+// map widget
 import 'package:url_launcher/url_launcher.dart';
 import 'package:maps_launcher/maps_launcher.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
+// files
 import 'package:campus_connect/about.dart';
 import 'package:campus_connect/about_app.dart';
 import 'package:campus_connect/feedback.dart';
@@ -68,7 +72,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
   MapController mapController = MapController();
   double lat = 0.0, long = 0.0;
 
-  void updateCurrent(String next) async {
+  // used for reverse navigation of current path
+  List tourStack = [];
+
+  // default parameter reverse=false
+  void updateCurrent(String next, {bool reverse = false}) async {
+    // add next state to tourStack
+    tourStack.add(next);
+
     // change current room
     currentRoom = next;
 
@@ -76,9 +87,9 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
     final response =
         await storage.child(map[currentRoom]['image']).getDownloadURL();
 
-    // zoom in and fade out animation
-    _zoomController.reset();
-    _zoomController.forward().then((value) {
+    // if reverse is set true then no zoom animation, only fade
+    if (reverse) {
+      // fade out animation
       _fadeController.reverse().then((value) {
         setState(() {
           // change bg
@@ -105,10 +116,41 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           _fadeController.forward();
         });
       });
-      // zoom out animation
+    } else {
+      // zoom in and fade out animation
       _zoomController.reset();
-      _zoomController.forward();
-    });
+      _zoomController.forward().then((value) {
+        _fadeController.reverse().then((value) {
+          setState(() {
+            // change bg
+            bg = response;
+
+            // change current information
+            currentBuilding = map[currentRoom]['building'];
+            currentFloor = map[currentRoom]['floor'];
+
+            // change audio description
+            description = map[currentRoom]['description'];
+
+            // setup hotspots
+            final angles = map[currentRoom]['hotspots'];
+            hotspots = [];
+            angles.forEach((key, value) {
+              hotspots.addAll([
+                hotspotMapIcon(double.parse(key)),
+                hotspotLabel(double.parse(key) + 8, value),
+                hotspotArrowIcon(double.parse(key), value),
+              ]);
+            });
+            // fade in animation
+            _fadeController.forward();
+          });
+        });
+        // zoom out animation
+        _zoomController.reset();
+        _zoomController.forward();
+      });
+    }
   }
 
   // returns a map icon hotspot
@@ -212,192 +254,214 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    // customizes the functionality of back button
+    return WillPopScope(
+      onWillPop: () async {
+        // removes the last state in tourStack
+        tourStack.removeLast();
 
-        appBar: AppBar(
-          title: Text(currentRoom),
-          actions: [
-            // random navigation
-            IconButton(
-              icon: const Icon(Icons.navigation_outlined),
-              onPressed: () {
-                showDialog(
-                    context: context,
-                    builder: (context) {
-                      // pass buildings map, updateCurrent() and current info
-                      return PopupMenu(
-                          buildings: buildings,
-                          updateCurrent: updateCurrent,
-                          currentBuilding: currentBuilding,
-                          currentFloor: currentFloor,
-                          currentRoom: currentRoom);
-                    });
-              },
-            ),
-          ],
-        ),
+        // if tour stack is empty, back button will redirect to main.dart
+        if (tourStack.isEmpty) {
+          return true;
+        }
 
-        drawer: Drawer(
-          child: ListView(
-            children: [
-              // drawerheader: image
-              DrawerHeader(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    fit: BoxFit.fill,
-                    image: CachedNetworkImageProvider(drawerHeader),
-                  ),
-                ),
-                child: const Column(
-                  children: [],
-                ),
-              ),
+        // else updateCurrent() is called with reverse set true
+        // note that last state is removed twice to prevent infinite loop
+        // updateCurrent() adds the first parameter to tourStack, this causes the infinte loop
+        updateCurrent(tourStack.removeLast(), reverse: true);
 
-
-              // About college: naviagtes to about college page
-              ListTile(
-                leading: const Icon(Icons.info_outline),
-                title: const Text(
-                  'About college',
-                  style: TextStyle(fontSize: 18),
-                ),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      // pass institute acronym and about information
-                      builder: (_) => About(
-                            title: map['acronym'],
-                            about: map['about'],
-                          )),
-                ),
-              ),
-
-
-              // map widget
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Container(
-                    decoration: BoxDecoration(border: Border.all()),
-                    height: 300,
-                    width: 500,
-                    child: FlutterMap(
-                      options: MapOptions(
-                        // center around institute coordinates
-                        center: LatLng(lat, long),
-                        zoom: 15,
-                      ),
-                      nonRotatedChildren: [
-                        // flutter map contributer
-                        RichAttributionWidget(
-                          attributions: [
-                            TextSourceAttribution(
-                              'OpenStreetMap contributors',
-                              onTap: () => launchUrl(Uri.parse(
-                                  'https://openstreetmap.org/copyright')),
-                            ),
-                          ],
-                        ),
-                      ],
-                      children: [
-                        TileLayer(
-                          urlTemplate:
-                              'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                          userAgentPackageName: 'com.example.app',
-                        ),
-                        MarkerLayer(
-                          markers: [
-
-                            // map icon that redirects to google map
-                            Marker(
-                              point: LatLng(lat, long),
-                              builder: (ctx) => InkWell(
-                                onTap: () =>
-                                    MapsLauncher.launchQuery(map['query']),
-                                child: Image.asset(
-                                    height: 50,
-                                    width: 50,
-                                    'assets/images/map-icon.png'),
-                              ),
-                            ),
-
-
-                            // label for map icon
-                            Marker(
-                              point: LatLng(lat - 0.0002, long + 0.0013),
-                              builder: (ctx) => InkWell(
-                                onTap: () =>
-                                    MapsLauncher.launchQuery(map['query']),
-                                child: Text(
-                                  map['acronym'],
-                                  style: const TextStyle(fontSize: 15),
-                                ),
-                              ),
-                            )
-                          ],
-                        )
-                      ],
-                    )),
-              ),
-
-
-              // divider
-              const Divider(
-                // thickness: 3,
-                color: Colors.black26,
-                indent: 5,
-                endIndent: 5,
-              ),
-
-
-              // about app: navigates to about app screen
-              ListTile(
-                leading: const Icon(Icons.question_mark_outlined),
-                title: const Text(
-                  'About app',
-                  style: TextStyle(fontSize: 18),
-                ),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AboutApp(),
-                  ),
-                ),
-              ),
-
-
-              // feedback: navigates to feedback page
-              ListTile(
-                leading: const Icon(Icons.feedback_outlined),
-                title: const Text(
-                  'Feedback',
-                  style: TextStyle(fontSize: 18),
-                ),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const FeedbackForm(),
-                  ),
-                ),
+        return false;
+      },
+      child: Scaffold(
+          appBar: AppBar(
+            title: Text(currentRoom),
+            actions: [
+              // random navigation
+              IconButton(
+                icon: const Icon(Icons.navigation_outlined),
+                onPressed: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) {
+                        // pass buildings map, updateCurrent() and current info
+                        return PopupMenu(
+                            buildings: buildings,
+                            updateCurrent: updateCurrent,
+                            currentBuilding: currentBuilding,
+                            currentFloor: currentFloor,
+                            currentRoom: currentRoom);
+                      });
+                },
               ),
             ],
           ),
-        ),
+          drawer: Drawer(
+            child: ListView(
+              children: [
+                // drawerheader: image
+                DrawerHeader(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.fill,
+                      image: CachedNetworkImageProvider(drawerHeader),
+                    ),
+                  ),
+                  child: const Column(
+                    children: [],
+                  ),
+                ),
 
-        // body: fade, zoom, panorama
-        body: FadeTransition(
-          opacity: _fadeAnimation,
-          child: ScaleTransition(
-            scale: _zoomAnimation,
-            child: Panorama(
-                key: UniqueKey(),
-                hotspots: hotspots,
-                child: Image(image: CachedNetworkImageProvider(bg))),
+                // About college: naviagtes to about college page
+                ListTile(
+                  leading: const Icon(Icons.info_outline),
+                  title: const Text(
+                    'About college',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        // pass institute acronym and about information
+                        builder: (_) => About(
+                              title: map['acronym'],
+                              about: map['about'],
+                            )),
+                  ),
+                ),
+
+                // map widget
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Container(
+                      decoration: BoxDecoration(border: Border.all()),
+                      height: 300,
+                      width: 500,
+                      child: FlutterMap(
+                        options: MapOptions(
+                          // center around institute coordinates
+                          center: LatLng(lat, long),
+                          zoom: 15,
+                        ),
+                        nonRotatedChildren: [
+                          // flutter map contributer
+                          RichAttributionWidget(
+                            attributions: [
+                              TextSourceAttribution(
+                                'OpenStreetMap contributors',
+                                onTap: () => launchUrl(Uri.parse(
+                                    'https://openstreetmap.org/copyright')),
+                              ),
+                            ],
+                          ),
+                        ],
+                        children: [
+                          TileLayer(
+                            urlTemplate:
+                                'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+                            userAgentPackageName: 'com.example.app',
+                          ),
+                          MarkerLayer(
+                            markers: [
+                              // map icon that redirects to google map
+                              Marker(
+                                point: LatLng(lat, long),
+                                builder: (ctx) => InkWell(
+                                  onTap: () =>
+                                      MapsLauncher.launchQuery(map['query']),
+                                  child: Image.asset(
+                                      height: 50,
+                                      width: 50,
+                                      'assets/images/map-icon.png'),
+                                ),
+                              ),
+
+                              // label for map icon
+                              Marker(
+                                point: LatLng(lat - 0.0002, long + 0.0013),
+                                builder: (ctx) => InkWell(
+                                  onTap: () =>
+                                      MapsLauncher.launchQuery(map['query']),
+                                  child: Text(
+                                    map['acronym'],
+                                    style: const TextStyle(fontSize: 15),
+                                  ),
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      )),
+                ),
+
+                // divider
+                const Divider(
+                  // thickness: 3,
+                  color: Colors.black26,
+                  indent: 5,
+                  endIndent: 5,
+                ),
+
+                // about app: navigates to about app screen
+                ListTile(
+                  leading: const Icon(Icons.question_mark_outlined),
+                  title: const Text(
+                    'About app',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const AboutApp(),
+                    ),
+                  ),
+                ),
+
+                // feedback: navigates to feedback page
+                ListTile(
+                  leading: const Icon(Icons.feedback_outlined),
+                  title: const Text(
+                    'Feedback',
+                    style: TextStyle(fontSize: 18),
+                  ),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const FeedbackForm(),
+                    ),
+                  ),
+                ),
+
+                // exit virtual tour: redirect to main.dart
+                ListTile(
+                    leading: const Icon(Icons.exit_to_app_outlined),
+                    title: const Text(
+                      'Exit Virtual Tour',
+                      style: TextStyle(fontSize: 18),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pop();
+                    }),
+              ],
+            ),
           ),
-        ),
 
-        // pass description
-        floatingActionButton: FAB(
-          text: description,
-        ));
+          // body: fade, zoom, panorama
+          body: FadeTransition(
+            opacity: _fadeAnimation,
+            child: ScaleTransition(
+              scale: _zoomAnimation,
+              child: Panorama(
+                  key: UniqueKey(),
+                  hotspots: hotspots,
+                  child: Image(image: CachedNetworkImageProvider(bg))),
+            ),
+          ),
+
+          // pass description
+          floatingActionButton: FAB(
+            text: description,
+          )),
+    );
   }
 }

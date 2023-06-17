@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+// url launcher
 import 'package:url_launcher/url_launcher.dart';
 
 class About extends StatefulWidget {
@@ -16,7 +18,6 @@ class About extends StatefulWidget {
 }
 
 class _AboutState extends State<About> {
-
   // opens url
   Future<void> _openURL(String url) async {
     Uri uri = Uri.parse(url);
@@ -38,13 +39,11 @@ class _AboutState extends State<About> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-
             // address
             const Text(
               'Address:',
@@ -89,7 +88,7 @@ class _AboutState extends State<About> {
                 return InkWell(
                   // opens phone app
                   onTap: () => _openURL('tel:${widget.about['phone'][index]}'),
-                  child:  Text(
+                  child: Text(
                     widget.about['phone'][index],
                     style: const TextStyle(
                         color: Colors.blue,
@@ -99,15 +98,14 @@ class _AboutState extends State<About> {
                 );
               }),
             ),
-            
-            // separator            
+
+            // separator
             const SizedBox(height: 20.0),
-            
+
             // placement report: inkwell hyperlink
             const Text(
               'Placement Report:',
-              style:
-                  TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+              style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),
             InkWell(
               onTap: () => _openURL(widget.about['placement-report']),

@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
+
+// fluttertoast
 import 'package:fluttertoast/fluttertoast.dart';
+
+// firebase core, options and rtdb
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:firebase_database/firebase_database.dart';
+
+// files
 import 'home.dart';
 
 void main() async {
@@ -165,8 +171,8 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                           ),
                         ),
                       );
-                    } 
-                    
+                    }
+
                     // show toast message if no input
                     else {
                       Fluttertoast.showToast(
@@ -181,7 +187,8 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                     }
                   },
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.blue),
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(Colors.blue),
                   ),
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
