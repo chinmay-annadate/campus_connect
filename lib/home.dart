@@ -264,16 +264,25 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
         // removes the last state in tourStack
         tourStack.removeLast();
 
-        // if tour stack is empty, back button will redirect to main.dart
+        // if tour stack is empty then confirm redirection to main.dart
         if (tourStack.isEmpty) {
+          // wait for confirmation from dialog box
+          bool? exitConfirmed = await showExitConfirmationDialog(context);
+
+          // if confirmed then default functionality of back button is assumed and popped to main.dart
+          if (exitConfirmed != null && exitConfirmed) {
             return true;
+          }
+
+          // else add start state (the only possible state) to tourStack and return false to block back button
+          tourStack.add(map['start']);
+          return false;
         }
 
-        // else updateCurrent() is called with reverse set true
+        // else updateCurrent() is called with reverse set true, then reurn false to block back button
         // note that last state is removed twice to prevent infinite loop
         // updateCurrent() adds the first parameter to tourStack, this causes the infinte loop
         updateCurrent(tourStack.removeLast(), reverse: true);
-
         return false;
       },
       child: Scaffold(
