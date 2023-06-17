@@ -5,14 +5,20 @@ class PopupMenu extends StatefulWidget {
       {super.key,
       required this.buildings,
       required this.updateCurrent,
-      required this.building,
-      required this.floor,
-      required this.room});
+      required this.currentBuilding,
+      required this.currentFloor,
+      required this.currentRoom});
+
+  // map of buildings in campus    
   final Map buildings;
+
+  // to be called when room value is changed
   final Function(String) updateCurrent;
-  final String building;
-  final String floor;
-  final String room;
+
+  // current info
+  final String currentBuilding;
+  final String currentFloor;
+  final String currentRoom;
 
   @override
   State<PopupMenu> createState() => _PopupMenuState();
@@ -29,18 +35,31 @@ class _PopupMenuState extends State<PopupMenu> {
   List<String> roomsDropDownList = [];
   String roomsDropDownValue = '';
 
+  // initialize nav to current room, floor & building
   @override
   void initState() {
     super.initState();
+    // extract keys from buildings{} and cast to list<String>: list of buildings
     buildingsDropDownList = widget.buildings.keys.toList().cast<String>();
-    buildingsDropDownValue = widget.building;
+    
+    // set selected building to current building
+    buildingsDropDownValue = widget.currentBuilding;
 
+    
+    // extract floors of current building
     floors = widget.buildings[buildingsDropDownValue];
-    floorsDropDownList = floors.keys.toList().cast<String>();
-    floorsDropDownValue = widget.floor;
 
+    // extract keys from floors of current building and cast to list<String>: list of floors in current building
+    floorsDropDownList = floors.keys.toList().cast<String>();
+
+    // set selected floor to current floor
+    floorsDropDownValue = widget.currentFloor;
+
+    // get list of rooms from current floor
     roomsDropDownList = (floors[floorsDropDownValue] as List).cast<String>();
-    roomsDropDownValue = widget.room;
+
+    // set selected room to collected room
+    roomsDropDownValue = widget.currentRoom;
   }
 
   @override
@@ -53,6 +72,7 @@ class _PopupMenuState extends State<PopupMenu> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
+
             // Buildings dropdown
             DropdownButton<String>(
               value: buildingsDropDownValue,
@@ -82,6 +102,7 @@ class _PopupMenuState extends State<PopupMenu> {
               },
             ),
 
+
             // floors dropdown
             DropdownButton<String>(
               value: floorsDropDownValue,
@@ -105,6 +126,7 @@ class _PopupMenuState extends State<PopupMenu> {
                 });
               },
             ),
+
 
             // rooms dropdown
             DropdownButton<String>(

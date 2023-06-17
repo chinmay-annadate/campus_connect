@@ -5,7 +5,10 @@ class About extends StatefulWidget {
   const About({Key? key, required this.title, required this.about})
       : super(key: key);
 
+  // acronym of institute
   final String title;
+
+  // institute information in map format
   final Map about;
 
   @override
@@ -13,6 +16,8 @@ class About extends StatefulWidget {
 }
 
 class _AboutState extends State<About> {
+
+  // opens url
   Future<void> _openURL(String url) async {
     Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -33,11 +38,13 @@ class _AboutState extends State<About> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
+      
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(18.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             // address
             const Text(
               'Address:',
@@ -48,14 +55,16 @@ class _AboutState extends State<About> {
               style: const TextStyle(fontSize: 16),
             ),
 
+            // separator
             const SizedBox(height: 20.0),
 
-            // email
+            // email: inkwell hyperlink
             const Text(
               'Email:',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
             ),
             InkWell(
+              // opens mail app
               onTap: () => _openURL('mailto:${widget.about['email']}'),
               child: Text(
                 widget.about['email'],
@@ -66,9 +75,10 @@ class _AboutState extends State<About> {
               ),
             ),
 
+            // separator
             const SizedBox(height: 20.0),
 
-            // phone
+            // phone: inkwell hyperlink list
             const Text(
               'Phone:',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
@@ -77,6 +87,7 @@ class _AboutState extends State<About> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(widget.about['phone'].length, (index) {
                 return InkWell(
+                  // opens phone app
                   onTap: () => _openURL('tel:${widget.about['phone'][index]}'),
                   child:  Text(
                     widget.about['phone'][index],
@@ -89,9 +100,10 @@ class _AboutState extends State<About> {
               }),
             ),
             
+            // separator            
             const SizedBox(height: 20.0),
             
-            // placement report
+            // placement report: inkwell hyperlink
             const Text(
               'Placement Report:',
               style:
@@ -108,9 +120,10 @@ class _AboutState extends State<About> {
               ),
             ),
 
+            // separator
             const SizedBox(height: 20.0),
 
-            // programmes
+            // programmes list
             const Text(
               'Programmes:',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
@@ -126,9 +139,10 @@ class _AboutState extends State<About> {
               }),
             ),
 
+            // separator
             const SizedBox(height: 20.0),
 
-            // clubs
+            // clubs list
             const Text(
               'Clubs:',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
@@ -143,9 +157,10 @@ class _AboutState extends State<About> {
               }),
             ),
 
+            // separator
             const SizedBox(height: 20.0),
 
-            // website
+            // website: inkwell hyperlink
             const Text(
               'Website:',
               style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),

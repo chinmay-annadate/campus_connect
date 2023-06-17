@@ -9,6 +9,7 @@ class AboutApp extends StatelessWidget {
       appBar: AppBar(
         title: const Text('About App'),
       ),
+
       body: const Padding(
         padding: EdgeInsets.all(16),
         child: Column(
@@ -28,7 +29,10 @@ class AboutApp extends StatelessWidget {
               style: TextStyle(fontSize: 16),
             ),
 
+
+            // separator
             SizedBox(height: 20),
+
 
             // features
             Text(
@@ -41,27 +45,37 @@ class AboutApp extends StatelessWidget {
               style: TextStyle(fontSize: 16),
             ),
 
+            
+            // separator
             SizedBox(height: 20),
+
 
             // project
             Text(
               'Project:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+
             SizedBox(height: 8),
+            
             Text(
               'This app was developed as part of a mini project for the TY CSE A class at Walchand Institute of Technology, Solapur.',
               style: TextStyle(fontSize: 16),
             ),
 
+
+            // separator
             SizedBox(height: 20),
 
+            
             // team members
             Text(
               'Team Members:',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
+
             SizedBox(height: 4),
+            
             Text(
               '- Chinmay Annadate\n- Gayatri Batgeri\n- Tanmay Kanhed\n- Geetanjali Mali',
               style: TextStyle(fontSize: 16),

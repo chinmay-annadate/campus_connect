@@ -6,6 +6,7 @@ import 'package:firebase_database/firebase_database.dart';
 import 'home.dart';
 
 void main() async {
+  // initialize firebase
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
@@ -27,6 +28,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+// choose widget: a search box(text + list field) and a submit button
 class Choose extends StatefulWidget {
   const Choose({Key? key, required this.title}) : super(key: key);
   final String title;
@@ -47,6 +49,8 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
+
+    // get list of institutions from rtdb
     DatabaseReference ref = FirebaseDatabase.instance.ref('index');
     ref.onValue.listen((DatabaseEvent event) {
       final data = event.snapshot.value;
@@ -67,6 +71,7 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
     super.dispose();
   }
 
+  // creates filtered list based on input text
   void updateFilteredList(String value) {
     setState(() {
       filteredList = institutesList
@@ -76,14 +81,22 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
     });
   }
 
+  // selects institute
   void selectInstitute(String institute) {
     setState(() {
       selectedInstitute = institute;
+
+      // disables list
       isOptionsVisible = false;
+
+      // sets text field value
       searchController.text = selectedInstitute;
     });
 
+    // changes focus back to text field
     searchFocusNode.requestFocus();
+
+    // positions cursor to the end of the input text
     searchController.selection = TextSelection.fromPosition(
       TextPosition(offset: searchController.text.length),
     );
@@ -101,9 +114,12 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // appbar
       appBar: AppBar(
         title: Text(widget.title),
       ),
+
+      // body
       body: Center(
         child: Stack(
           alignment: Alignment.center,
@@ -111,7 +127,7 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // input
+                // input text field
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: TextField(
@@ -135,9 +151,10 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                   ),
                 ),
 
-                // start virtual tour
+                // start virtual tour button
                 ElevatedButton(
                   onPressed: () {
+                    // navigates to home page, send selected institute data
                     if (selectedInstitute.isNotEmpty) {
                       Navigator.push(
                         context,
@@ -148,7 +165,10 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                           ),
                         ),
                       );
-                    } else {
+                    } 
+                    
+                    // show toast message if no input
+                    else {
                       Fluttertoast.showToast(
                         msg: 'Please select an institute',
                         toastLength: Toast.LENGTH_SHORT,
@@ -173,6 +193,8 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                 ),
               ],
             ),
+
+            // options list
             if (isOptionsVisible)
               Positioned(
                 top: 250,
