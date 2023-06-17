@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 
 class PopupMenu extends StatefulWidget {
   const PopupMenu(
@@ -172,11 +173,34 @@ class _PopupMenuState extends State<PopupMenu> {
             ),
 
             // floor plan image
-            CachedNetworkImage(
-              imageUrl: floorPlan,
-              placeholder: (context, url) => const CircularProgressIndicator(),
-              errorWidget: (context, url, error) => const Icon(Icons.error),
-            ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => Scaffold(
+                      body: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: MediaQuery.of(context).size.height,
+                        child: PhotoView(
+                          minScale: PhotoViewComputedScale.contained,
+                          imageProvider: CachedNetworkImageProvider(floorPlan),
+                          backgroundDecoration: const BoxDecoration(
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              child: CachedNetworkImage(
+                imageUrl: floorPlan,
+                placeholder: (context, url) =>
+                    const CircularProgressIndicator(),
+                errorWidget: (context, url, error) => const Icon(Icons.error),
+              ),
+            )
           ],
         ),
       ),
