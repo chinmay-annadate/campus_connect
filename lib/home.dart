@@ -20,6 +20,7 @@ import 'package:campus_connect/about_app.dart';
 import 'package:campus_connect/feedback.dart';
 import 'package:campus_connect/random_navigation.dart';
 import 'package:campus_connect/audio_guide.dart';
+import 'package:campus_connect/exit_dialog.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key, required this.title, required this.institute})
@@ -438,9 +439,22 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                       'Exit Virtual Tour',
                       style: TextStyle(fontSize: 18),
                     ),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
+                    onTap: () async {
+                      // wait for confirmation from dialog box
+                      bool? exitConfirmed =
+                          await showExitConfirmationDialog(context);
+
+                      // if confirmed
+                      if (exitConfirmed != null && exitConfirmed) {
+                        // if contex mounted
+                        if (context.mounted) {
+                          // pop drawer
+                          Navigator.of(context).pop();
+
+                          // pop home.dart
+                          Navigator.of(context).pop();
+                        }
+                      }
                     }),
               ],
             ),

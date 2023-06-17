@@ -68,13 +68,13 @@ class _PopupMenuState extends State<PopupMenu> {
     floorsDropDownValue = widget.currentFloor;
 
     // get list of rooms from current floor
-    roomsDropDownList = (floors[floorsDropDownValue][0] as List).cast<String>();
+    roomsDropDownList = (floors[floorsDropDownValue].first as List).cast<String>();
 
     // set selected room to collected room
     roomsDropDownValue = widget.currentRoom;
 
     // set image src for current floor
-    getFloorPlan(floors[floorsDropDownValue][1]);
+    getFloorPlan(floors[floorsDropDownValue].elementAt(1));
   }
 
   void getFloorPlan(String name) async {
@@ -114,14 +114,14 @@ class _PopupMenuState extends State<PopupMenu> {
 
                   floors = widget.buildings[buildingsDropDownValue];
                   floorsDropDownList = floors.keys.toList().cast<String>();
-                  floorsDropDownValue = floorsDropDownList[0];
+                  floorsDropDownValue = floorsDropDownList.first;
 
                   roomsDropDownList =
-                      (floors[floorsDropDownValue][0] as List).cast<String>();
-                  roomsDropDownValue = roomsDropDownList[0];
+                      (floors[floorsDropDownValue].first as List).cast<String>();
+                  roomsDropDownValue = roomsDropDownList.first;
 
                   // set image src for current floor
-                  getFloorPlan(floors[floorsDropDownValue][1]);
+                  getFloorPlan(floors[floorsDropDownValue].elementAt(1));
                 });
               },
             ),
@@ -144,11 +144,11 @@ class _PopupMenuState extends State<PopupMenu> {
                 setState(() {
                   floorsDropDownValue = newValue!;
                   roomsDropDownList =
-                      (floors[floorsDropDownValue][0] as List).cast<String>();
-                  roomsDropDownValue = roomsDropDownList[0];
+                      (floors[floorsDropDownValue].first as List).cast<String>();
+                  roomsDropDownValue = roomsDropDownList.first;
 
                   // set image src for current floor
-                  getFloorPlan(floors[floorsDropDownValue][1]);
+                  getFloorPlan(floors[floorsDropDownValue].elementAt(1));
                 });
               },
             ),
