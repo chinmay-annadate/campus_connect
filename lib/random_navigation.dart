@@ -1,3 +1,5 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 
 class PopupMenu extends StatefulWidget {
@@ -9,7 +11,7 @@ class PopupMenu extends StatefulWidget {
       required this.currentFloor,
       required this.currentRoom});
 
-  // map of buildings in campus    
+  // map of buildings in campus
   final Map buildings;
 
   // to be called when room value is changed
@@ -35,17 +37,22 @@ class _PopupMenuState extends State<PopupMenu> {
   List<String> roomsDropDownList = [];
   String roomsDropDownValue = '';
 
+  // image src for floor plan
+  String floorPlan = '';
+
+  // firebase cloud storage instance
+  final storage = FirebaseStorage.instance.ref();
+
   // initialize nav to current room, floor & building
   @override
   void initState() {
     super.initState();
     // extract keys from buildings{} and cast to list<String>: list of buildings
     buildingsDropDownList = widget.buildings.keys.toList().cast<String>();
-    
+
     // set selected building to current building
     buildingsDropDownValue = widget.currentBuilding;
 
-    
     // extract floors of current building
     floors = widget.buildings[buildingsDropDownValue];
 
@@ -56,10 +63,20 @@ class _PopupMenuState extends State<PopupMenu> {
     floorsDropDownValue = widget.currentFloor;
 
     // get list of rooms from current floor
-    roomsDropDownList = (floors[floorsDropDownValue] as List).cast<String>();
+    roomsDropDownList = (floors[floorsDropDownValue][0] as List).cast<String>();
 
     // set selected room to collected room
     roomsDropDownValue = widget.currentRoom;
+
+    // set image src for current floor
+    getFloorPlan(floors[floorsDropDownValue][1]);
+  }
+
+  void getFloorPlan(String name) async {
+    final response = await storage.child(name).getDownloadURL();
+    setState(() {
+      floorPlan = response;
+    });
   }
 
   @override
@@ -72,7 +89,6 @@ class _PopupMenuState extends State<PopupMenu> {
           crossAxisAlignment: CrossAxisAlignment.start,
           mainAxisSize: MainAxisSize.min,
           children: [
-
             // Buildings dropdown
             DropdownButton<String>(
               value: buildingsDropDownValue,
@@ -96,12 +112,14 @@ class _PopupMenuState extends State<PopupMenu> {
                   floorsDropDownValue = floorsDropDownList[0];
 
                   roomsDropDownList =
-                      (floors[floorsDropDownValue] as List).cast<String>();
+                      (floors[floorsDropDownValue][0] as List).cast<String>();
                   roomsDropDownValue = roomsDropDownList[0];
+
+                  // set image src for current floor
+                  getFloorPlan(floors[floorsDropDownValue][1]);
                 });
               },
             ),
-
 
             // floors dropdown
             DropdownButton<String>(
@@ -121,12 +139,14 @@ class _PopupMenuState extends State<PopupMenu> {
                 setState(() {
                   floorsDropDownValue = newValue!;
                   roomsDropDownList =
-                      (floors[floorsDropDownValue] as List).cast<String>();
+                      (floors[floorsDropDownValue][0] as List).cast<String>();
                   roomsDropDownValue = roomsDropDownList[0];
+
+                  // set image src for current floor
+                  getFloorPlan(floors[floorsDropDownValue][1]);
                 });
               },
             ),
-
 
             // rooms dropdown
             DropdownButton<String>(
@@ -149,6 +169,13 @@ class _PopupMenuState extends State<PopupMenu> {
                   widget.updateCurrent(roomsDropDownValue);
                 });
               },
+            ),
+
+            // floor plan image
+            CachedNetworkImage(
+              imageUrl: floorPlan,
+              placeholder: (context, url) => const CircularProgressIndicator(),
+              errorWidget: (context, url, error) => const Icon(Icons.error),
             ),
           ],
         ),
