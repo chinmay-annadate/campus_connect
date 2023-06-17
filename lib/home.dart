@@ -18,9 +18,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:campus_connect/about.dart';
 import 'package:campus_connect/about_app.dart';
 import 'package:campus_connect/feedback.dart';
-import 'package:campus_connect/random_navigation.dart';
-import 'package:campus_connect/audio_guide.dart';
-import 'package:campus_connect/exit_dialog.dart';
+import 'package:campus_connect/components/random_navigation.dart';
+import 'package:campus_connect/components/audio_guide.dart';
+import 'package:campus_connect/components/exit_dialog.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key, required this.title, required this.institute})

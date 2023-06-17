@@ -13,7 +13,7 @@ import 'package:firebase_database/firebase_database.dart';
 
 // files
 import 'package:campus_connect/home.dart';
-import 'package:campus_connect/exit_dialog.dart';
+import 'package:campus_connect/components/exit_dialog.dart';
 
 void main() async {
   // initialize firebase

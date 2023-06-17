@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 // tts
 import 'package:flutter_tts/flutter_tts.dart';
 
+
+// floating action button with tts
 class FAB extends StatefulWidget {
   const FAB({super.key, required this.text});
   // text to be converted into speech

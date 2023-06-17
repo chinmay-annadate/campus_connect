@@ -7,6 +7,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
+// random navigation popup menu
 class PopupMenu extends StatefulWidget {
   const PopupMenu(
       {super.key,
@@ -74,7 +75,7 @@ class _PopupMenuState extends State<PopupMenu> {
     roomsDropDownValue = widget.currentRoom;
 
     // set image src for current floor
-    getFloorPlan(floors[floorsDropDownValue].elementAt(1));
+    getFloorPlan(floors[floorsDropDownValue].last);
   }
 
   void getFloorPlan(String name) async {
@@ -121,7 +122,7 @@ class _PopupMenuState extends State<PopupMenu> {
                   roomsDropDownValue = roomsDropDownList.first;
 
                   // set image src for current floor
-                  getFloorPlan(floors[floorsDropDownValue].elementAt(1));
+                  getFloorPlan(floors[floorsDropDownValue].last);
                 });
               },
             ),
@@ -148,7 +149,7 @@ class _PopupMenuState extends State<PopupMenu> {
                   roomsDropDownValue = roomsDropDownList.first;
 
                   // set image src for current floor
-                  getFloorPlan(floors[floorsDropDownValue].elementAt(1));
+                  getFloorPlan(floors[floorsDropDownValue].last);
                 });
               },
             ),
