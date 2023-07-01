@@ -54,7 +54,7 @@ class AboutApp extends StatelessWidget {
             SizedBox(height: 8),
 
             Text(
-              'This app was developed as part of a mini project for the TY CSE A class at Walchand Institute of Technology, Solapur.',
+              'This app was developed as the mini project for the TE CSE 2022-23 class at Walchand Institute of Technology, Solapur.',
               style: TextStyle(fontSize: 16),
             ),
 

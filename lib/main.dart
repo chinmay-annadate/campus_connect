@@ -28,13 +28,18 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Campus Connect',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        scaffoldBackgroundColor: Colors.white,
-      ),
-      home: const Choose(title: 'Campus Connect'),
-    );
+        title: 'Campus Connect',
+        theme: ThemeData(
+          primarySwatch: Colors.blue,
+          scaffoldBackgroundColor: Colors.white,
+        ),
+        home: const Choose(title: 'Campus Connect'),
+        initialRoute: '/',
+        routes: {
+          '/wit': (context) => const Home(
+              title: 'Campus Connect',
+              institute: 'Walchand Institute of Technology, Solapur')
+        });
   }
 }
 
