@@ -34,13 +34,154 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
         ),
         home: const Choose(title: 'Campus Connect'),
-        // initialRoute: '/',
-        // routes: {
-        //   '/wit': (context) => const Home(
-        //       title: 'Campus Connect',
-        //       institute: 'Walchand Institute of Technology, Solapur')
-        // }
-        );
+        initialRoute: '/',
+        routes: {
+          '/wit': (context) => const Home(
+                  title: 'Campus Connect',
+                  institute: 'Walchand Institute of Technology, Solapur',
+                  map: {
+                    "2-Wheeler parking": {
+                      "building": "Outdoor",
+                      "description": "2-Wheeler parking",
+                      "floor": "NA",
+                      "hotspots": {
+                        "0": "Main Entrance",
+                        "90": "Library",
+                        "180": "Back gate"
+                      },
+                      "image": "WIT/buildings/outdoor/2-wheeler-parking.jpg"
+                    },
+                    "Back gate": {
+                      "building": "Outdoor",
+                      "description": "Back gate",
+                      "floor": "NA",
+                      "hotspots": {
+                        "6": "Parking",
+                        "125": "Sports ground",
+                        "-85": "2-Wheeler parking"
+                      },
+                      "image": "WIT/buildings/outdoor/back-gate.jpg"
+                    },
+                    "Canteen": {
+                      "building": "Outdoor",
+                      "description": "Canteen",
+                      "floor": "NA",
+                      "hotspots": {
+                        "90": "Main Entrance",
+                        "-90": "Xerox centre"
+                      },
+                      "image": "WIT/buildings/outdoor/canteen.jpg"
+                    },
+                    "Civil-Mech": {
+                      "building": "Outdoor",
+                      "description": "Civil-Mech building and workcentre",
+                      "floor": "NA",
+                      "hotspots": {"150": "Parking"},
+                      "image": "WIT/buildings/outdoor/civil-mech.jpg"
+                    },
+                    "Library": {
+                      "building": "Outdoor",
+                      "description":
+                          "The central library has over 20 million books, 81 journals, 542 e-journals and 10 newspapers",
+                      "floor": "NA",
+                      "hotspots": {
+                        "43": "2-Wheeler parking",
+                        "-40": "Xerox centre"
+                      },
+                      "image": "WIT/buildings/outdoor/library.jpg"
+                    },
+                    "Main Entrance": {
+                      "building": "Outdoor",
+                      "description":
+                          "Walchand Institute of Technology, one of the pioneering self financed Institution in engineering education & research was established in 1983 by SAPDJ Pathshala Trust ( established 1885).",
+                      "floor": "NA",
+                      "hotspots": {"65": "2-Wheeler parking", "-65": "Canteen"},
+                      "image": "WIT/buildings/outdoor/main-entrance.jpg"
+                    },
+                    "Parking": {
+                      "building": "Outdoor",
+                      "description": "Parking",
+                      "floor": "NA",
+                      "hotspots": {
+                        "15": "Civil-Mech",
+                        "-125": "Back gate",
+                        "-40": "Xerox centre"
+                      },
+                      "image": "WIT/buildings/outdoor/parking.jpg"
+                    },
+                    "Reading room": {
+                      "building": "Main Building",
+                      "description": "Reading room",
+                      "floor": "Ground floor",
+                      "hotspots": {"180": "Library lobby"},
+                      "image": "WIT/buildings/library/reading-room.jpg"
+                    },
+                    "Sports ground": {
+                      "building": "Outdoor",
+                      "description": "Sports ground",
+                      "floor": "NA",
+                      "hotspots": {"-110": "Back gate"},
+                      "image": "WIT/buildings/outdoor/sports-ground.jpg"
+                    },
+                    "Xerox centre": {
+                      "building": "Outdoor",
+                      "description": "Xerox centre",
+                      "floor": "NA",
+                      "hotspots": {
+                        "5": "Library",
+                        "90": "Canteen",
+                        "-90": "Parking"
+                      },
+                      "image": "WIT/buildings/outdoor/xerox-shop.jpg"
+                    },
+                    "about": {
+                      "address":
+                          "Walchand Institute of Technology, Solapur P.B.No.634, Walchand Hirachand Marg, Ashok Chowk, Solapur – 413006 (Maharashtra)",
+                      "clubs": [
+                        "Google Developer Student Club",
+                        "LOL Coding Club"
+                      ],
+                      "email": "principal@witsolapur.org",
+                      "phone": ["02172652700", "02172653040"],
+                      "placement-report":
+                          "https://witsolapur.org/training-and-placements/",
+                      "programmes": [
+                        "Civil Engineering",
+                        "Computer Science and Engineering",
+                        "Electronics and Computer Engineering",
+                        "Electronics and Telecommunication Engineering",
+                        "Information Technology",
+                        "Mechanical and Automation Engineering",
+                        "General Engineering"
+                      ],
+                      "website": "https://witsolapur.org/"
+                    },
+                    "acronym": "WIT",
+                    "buildings": {
+                      "Outdoor": {
+                        "NA": [
+                          [
+                            "Main Entrance",
+                            "Canteen",
+                            "Xerox centre",
+                            "Parking",
+                            "Civil-Mech",
+                            "2-Wheeler parking",
+                            "Sports ground",
+                            "Library",
+                            "Back gate"
+                          ],
+                          "WIT/buildings/outdoor/outdoor-floorplan.jpg"
+                        ]
+                      }
+                    },
+                    "drawer-header": "WIT/drawer-header.jpg",
+                    "lat": "17.668871374166493",
+                    "long": "75.922801866673",
+                    "query": "Walchand Institute Of Technology ( W.I.T )",
+                    "start": "Main Entrance"
+                  })
+        });
   }
 }
 
@@ -200,16 +341,14 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                       // navigates to home page, send selected institute data
                       if (selectedInstitute.isNotEmpty) {
                         getData().then((value) => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => Home(
-                              title: widget.title,
-                              institute: selectedInstitute,
-                              map: value
-                            ),
-                          ),
-                        ))
-                        ;
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => Home(
+                                    title: widget.title,
+                                    institute: selectedInstitute,
+                                    map: value),
+                              ),
+                            ));
                       }
 
                       // show toast message if no input
