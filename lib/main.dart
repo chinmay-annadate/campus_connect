@@ -34,12 +34,13 @@ class MyApp extends StatelessWidget {
           scaffoldBackgroundColor: Colors.white,
         ),
         home: const Choose(title: 'Campus Connect'),
-        initialRoute: '/',
-        routes: {
-          '/wit': (context) => const Home(
-              title: 'Campus Connect',
-              institute: 'Walchand Institute of Technology, Solapur')
-        });
+        // initialRoute: '/',
+        // routes: {
+        //   '/wit': (context) => const Home(
+        //       title: 'Campus Connect',
+        //       institute: 'Walchand Institute of Technology, Solapur')
+        // }
+        );
   }
 }
 
@@ -61,16 +62,31 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
   TextEditingController searchController = TextEditingController();
   FocusNode searchFocusNode = FocusNode();
 
+  DatabaseReference ref = FirebaseDatabase.instance.ref();
+
+  Future<List<String>> getIndex() async {
+    final snapshot = await ref.child('index').get();
+    if (snapshot.exists) {
+      return (snapshot.value as List).cast<String>();
+    }
+    return [];
+  }
+
+  Future<Map> getData() async {
+    final snapshot = await ref.child(selectedInstitute).get();
+    if (snapshot.exists) {
+      return snapshot.value as Map;
+    }
+    return {};
+  }
+
   @override
   void initState() {
     super.initState();
 
-    // get list of institutions from rtdb
-    DatabaseReference ref = FirebaseDatabase.instance.ref('index');
-    ref.onValue.listen((DatabaseEvent event) {
-      final data = event.snapshot.value;
+    getIndex().then((value) {
       setState(() {
-        institutesList = (data as List).cast<String>();
+        institutesList = value;
         filteredList = institutesList;
       });
     });
@@ -183,15 +199,17 @@ class _ChooseState extends State<Choose> with WidgetsBindingObserver {
                     onPressed: () {
                       // navigates to home page, send selected institute data
                       if (selectedInstitute.isNotEmpty) {
-                        Navigator.push(
+                        getData().then((value) => Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (_) => Home(
                               title: widget.title,
                               institute: selectedInstitute,
+                              map: value
                             ),
                           ),
-                        );
+                        ))
+                        ;
                       }
 
                       // show toast message if no input

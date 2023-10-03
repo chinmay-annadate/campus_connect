@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 // firebase rtdb and cloud storage
-import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 // panorama
@@ -23,7 +22,11 @@ import 'package:campus_connect/components/audio_guide.dart';
 import 'package:campus_connect/components/exit_dialog.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key, required this.title, required this.institute})
+  const Home(
+      {Key? key,
+      required this.title,
+      required this.institute,
+      required this.map})
       : super(key: key);
 
   // name of the app, required only for about app page
@@ -32,14 +35,13 @@ class Home extends StatefulWidget {
   // name of selected institute
   final String institute;
 
+  final Map map;
+
   @override
   State<Home> createState() => _HomeState();
 }
 
 class _HomeState extends State<Home> with TickerProviderStateMixin {
-  // map of selected institute
-  Map map = {};
-
   // current information
   String currentRoom = '';
   String currentBuilding = '';
@@ -86,7 +88,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
 
     // get bg image src
     final response =
-        await storage.child(map[currentRoom]['image']).getDownloadURL();
+        await storage.child(widget.map[currentRoom]['image']).getDownloadURL();
 
     // if reverse is set true then no zoom animation, only fade
     if (reverse) {
@@ -97,14 +99,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           bg = response;
 
           // change current information
-          currentBuilding = map[currentRoom]['building'];
-          currentFloor = map[currentRoom]['floor'];
+          currentBuilding = widget.map[currentRoom]['building'];
+          currentFloor = widget.map[currentRoom]['floor'];
 
           // change audio description
-          description = map[currentRoom]['description'];
+          description = widget.map[currentRoom]['description'];
 
           // setup hotspots
-          final angles = map[currentRoom]['hotspots'];
+          final angles = widget.map[currentRoom]['hotspots'];
           hotspots = [];
           angles.forEach((key, value) {
             hotspots.addAll([
@@ -127,14 +129,14 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
             bg = response;
 
             // change current information
-            currentBuilding = map[currentRoom]['building'];
-            currentFloor = map[currentRoom]['floor'];
+            currentBuilding = widget.map[currentRoom]['building'];
+            currentFloor = widget.map[currentRoom]['floor'];
 
             // change audio description
-            description = map[currentRoom]['description'];
+            description = widget.map[currentRoom]['description'];
 
             // setup hotspots
-            final angles = map[currentRoom]['hotspots'];
+            final angles = widget.map[currentRoom]['hotspots'];
             hotspots = [];
             angles.forEach((key, value) {
               // converting the string key to double
@@ -234,18 +236,13 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
       }
     });
 
-    // reference to rtdb instance
-    DatabaseReference ref = FirebaseDatabase.instance.ref(widget.institute);
-    ref.onValue.listen((DatabaseEvent event) {
-      setState(() {
-        // initialize values
-        map = event.snapshot.value as Map;
-        updateCurrent(map['start']);
-        getDrawerHeader(map['drawer-header']);
-        buildings = map['buildings'];
-        lat = double.parse(map['lat']);
-        long = double.parse(map['long']);
-      });
+    setState(() {
+      // initialize values
+      updateCurrent(widget.map['start']);
+      getDrawerHeader(widget.map['drawer-header']);
+      buildings = widget.map['buildings'];
+      lat = double.parse(widget.map['lat']);
+      long = double.parse(widget.map['long']);
     });
   }
 
@@ -275,7 +272,7 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
           }
 
           // else add start state (the only possible state) to tourStack and return false to block back button
-          tourStack.add(map['start']);
+          tourStack.add(widget.map['start']);
           return false;
         }
 
@@ -336,8 +333,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                     MaterialPageRoute(
                         // pass institute acronym and about information
                         builder: (_) => About(
-                              title: map['acronym'],
-                              about: map['about'],
+                              title: widget.map['acronym'],
+                              about: widget.map['about'],
                             )),
                   ),
                 ),
@@ -379,8 +376,8 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                               Marker(
                                 point: LatLng(lat, long),
                                 builder: (ctx) => InkWell(
-                                  onTap: () =>
-                                      MapsLauncher.launchQuery(map['query']),
+                                  onTap: () => MapsLauncher.launchQuery(
+                                      widget.map['query']),
                                   child: Image.asset(
                                       height: 50,
                                       width: 50,
@@ -392,10 +389,10 @@ class _HomeState extends State<Home> with TickerProviderStateMixin {
                               Marker(
                                 point: LatLng(lat - 0.0002, long + 0.0013),
                                 builder: (ctx) => InkWell(
-                                  onTap: () =>
-                                      MapsLauncher.launchQuery(map['query']),
+                                  onTap: () => MapsLauncher.launchQuery(
+                                      widget.map['query']),
                                   child: Text(
-                                    map['acronym'],
+                                    widget.map['acronym'],
                                     style: const TextStyle(fontSize: 15),
                                   ),
                                 ),
